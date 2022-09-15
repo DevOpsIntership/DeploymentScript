@@ -1,0 +1,58 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+         "unique-id": {
+            "type": "string",
+            "defaultValue": "[utcNow()]"
+        }
+        
+    },
+    "functions": [],
+    "variables": {
+        "location":"[resourceGroup().location]",
+        "storage": "Standard_LRS",
+         "general": {
+            "uniqueId": "[parameters('unique-id')]",
+            "id": "[uniqueString(resourceGroup().id)]",
+            "sharedRG": "Shared"
+        }
+
+    },
+    "resources": [
+            {
+            "name": "adkwolek",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2021-06-01",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "[variables('storage')]"
+            },
+            "kind": "StorageV2"
+        },
+
+        {
+            "type": "Microsoft.Resources/deploymentScripts",
+            "apiVersion": "2020-10-01",
+            "name": "AzureCliScript",
+            "location": "[variables('location')]",
+            "kind": "AzureCLI",
+            "identity": {
+                "type": "userAssigned",
+                "userAssignedIdentities": {
+                "/subscriptions/c726bf38-5524-4f36-ae0c-e87f35b14d51/resourcegroups/psautomation/providers/Microsoft.ManagedIdentity/userAssignedIdentities/automation": {}
+                }
+            },
+            "properties": {
+                "forceUpdateTag": "[variables('general').uniqueId]",
+                "azCliVersion": "2.30.0",
+                "primaryScriptUri": "https://raw.githubusercontent.com/DevOpsIntership/DeploymentScript/main/container.sh",
+                "supportingScriptUris": [],
+                "timeout": "PT10M",
+                "cleanupPreference": "Always",
+                "retentionInterval": "P1D"
+            }
+        }
+    ],
+    "outputs": {}
+}
